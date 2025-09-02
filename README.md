@@ -8,10 +8,9 @@
 
 ## Table of Contents
 
-* [Overview](#overview)
 * [Testbed](#testbed)
 * [Installation](#installation)
-  * [Ingress](#ingress)
+  * [Ingress](#nadino-ingress)
   * [Network Engine](#network-engine)
 * [Configuration](#configuration)
 * [Running Examples](#running-examples)
@@ -40,6 +39,8 @@
 
    ```bash
    git clone --recursive https://github.com/ucr-serverless/NADINO.git
+   cd NADINO
+   git submodule update --init --recursive
    ```
 
 ### NADINO Ingress
@@ -286,27 +287,49 @@
 
 ### Network Engine
 
-1. **Clone repo**
-
    ```bash
-   git clone git@github.com:ucr-serverless/palladium-gateway.git
-   cd palladium-gateway
-   git submodule update --init --recursive
+   cd nadino-network-engine
    ```
 
-2. **Dependencies**
+1. **Dependencies**
 
-   * Set up **DOCA environment** on DPUs
-   * Install Palladium deps: see [install-dependencies.md](docs/install-dependencies.md)
-   * Ensure `RDMA_lib` is built:
+    * Set up **DOCA environment** on DPUs (visit [official DOCA Documentation](https://docs.nvidia.com/doca/sdk/doca+installation+guide+for+linux/index.html)):
+        ```bash
+        # Install DOCA packages (v2.9.1)
+        wget https://www.mellanox.com/downloads/DOCA/DOCA_v2.9.1/host/doca-host_2.9.1-018000-24.10-ubuntu2204_amd64.deb
+        sudo dpkg -i doca-host_2.9.1-018000-24.10-ubuntu2204_amd64.deb
+        sudo apt-get update
+        sudo apt-get -y install doca-all
+        ```
 
-     ```bash
-     cd RDMA_lib
-     meson setup build --reconfigure
-     ninja -C build -v
-     ```
+    * Install Network Engine deps (libbpf, DPDK lib, ...):
+        ```bash
+        bash sigcomm-experiment/env-setup/001-env_setup_master.sh
+        bash sigcomm-experiment/env-setup/002-env_setup_master.sh
+        ```
 
-3. **Build gateway**
+    * Hugepage
+        ```bash
+        # Set hugepage at system-wide (Option#1)
+        sudo sysctl -w vm.nr_hugepages=16384
+
+        # Set hugepage (Option#2)
+        # single-node system (Option#2) (use root)
+        echo 1024 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+
+        # or NUMA (Option#2) (use root)
+        echo 1024 > /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages
+        echo 1024 > /sys/devices/system/node/node1/hugepages/hugepages-2048kB/nr_hugepages
+        ```
+
+    * Ensure `RDMA_lib` is built:
+        ```bash
+        cd RDMA_lib
+        meson setup build --reconfigure
+        ninja -C build -v
+        ```
+
+2. **Build Network Engine**
 
    ```bash
    meson setup build
@@ -315,7 +338,7 @@
 
 ---
 
-## Configuration
+## Configuration of Network Engine
 
 * Update config files in `cfg/` directory (see [change-cfg-file.md](docs/change-cfg-file.md)).
 * Example configs provided for:
@@ -326,64 +349,19 @@
 
 ---
 
-## Running Examples
+## Sample Experiments
 
-### Dummy function chain
+### Running with a Dummy Function Chain
+See [Dummy Function Chain Setup](docs/DUMMY.md) for details.
 
-```bash
-# Node 1
-sudo ./run.sh shm_mgr ./cfg/my-palladium-cpu.cfg
-sudo ./run.sh gateway ./cfg/my-palladium-cpu.cfg
-sudo ./run.sh nf 1
-```
-
-```bash
-# Node 2
-sudo ./run.sh shm_mgr ./cfg/my-palladium-cpu.cfg
-sudo ./run.sh gateway ./cfg/my-palladium-cpu.cfg
-sudo ./run.sh nf 2
-```
-
-### Online Boutique
-
-Launch services with:
-
-```bash
-sudo ./run.sh frontendservice 1
-sudo ./run.sh recommendationservice 5
-sudo ./run.sh checkoutservice 7
-...
-```
-
-> See full examples in the [docs](docs/).
-
----
-
-## Testing
-
-* Use `wrk` for load generation:
-
-  ```bash
-  wrk -t1 -c90 -d30s http://192.168.10.61:8080/1/cart -H "Connection: Close"
-  ```
-* Monitor CPU usage:
-
-  ```bash
-  pidstat 1
-  ```
-
----
-
-## Development Notes
-
-* **Add new source file (Ingress):** include `ngx_config.h` and `ngx_core.h`, then register file in `auto/sources`.
-* **Add new flags/libraries:** modify `auto/make` (`CFLAGS` and `CORE_LIBS`).
+### Running with Online Boutique Workload
+See [Online Boutique Workload](docs/ONLINE_BOUTIQUE.md) for details.
 
 ---
 
 ## License
 
-* Palladium Ingress: BSD 3-Clause (with Apache-2.0 modifications)
-* Palladium Network Engine: Apache License 2.0
+* Cluster Ingress: BSD 3-Clause (with Apache-2.0 modifications)
+* NADINO Network Engine: Apache License 2.0
 
 See individual `LICENSE` files for details.

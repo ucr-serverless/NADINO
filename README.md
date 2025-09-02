@@ -336,14 +336,18 @@
 
 ---
 
-## Configuration of Network Engine
+## Workload Configuration
 
-* Update config files in `cfg/` directory (see [change-cfg-file.md](docs/change-cfg-file.md)).
-* Example configs provided for:
+* Update config files in `nadino-network-engine/cfg/` directory (see [CONFIG.md](docs/CONFIG.md)).
 
-  * CPU-only deployment
-  * Online Boutique microservices demo
-  * Multi-node with DPU offload
+> The configuration file defines the mapping of functions, routes, nodes, tenants, memory, and RDMA settings needed to deploy and run NADINO experiments. It defines:
+> 
+> * **Functions:** their identities, names, placement, threading, and workload parameters.
+> * **Call graphs:** the execution paths requests follow across functions.
+> * **Nodes:** the worker nodes and DPUs, along with IPs, hostnames, RDMA devices, and DOCA communication channel settings.
+> * **Tenants:** isolation and fairness settings via tenant IDs, weights, and permitted routes.
+> * **Memory manager settings:** memory pool sizes, placement, and associated device bindings.
+> * **RDMA settings:** whether to use RDMA or TCP, choice of one-sided vs. two-sided RDMA, queue sizing, and experiment knobs.
 
 ---
 

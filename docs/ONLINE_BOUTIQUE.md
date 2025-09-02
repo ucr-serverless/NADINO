@@ -61,12 +61,14 @@ sudo ./run.sh gateway ./cfg/online-boutique-palladium-dpu.cfg
 * Use `wrk` for load generation:
 
   ```bash
-  wrk -t1 -c90 -d30s http://192.168.10.61:8080/1/cart -H "Connection: Close"
-  ```
-* Monitor CPU usage:
+  # Home Query
+  wrk -t<num_threads> -c<num_clients> -d30s http://<INGRESS_IP>:80/rdma/1/
 
-  ```bash
-  pidstat 1
+  # View Cart
+  wrk -t<num_threads> -c<num_clients> -d30s http://<INGRESS_IP>:80/rdma/1/cart
+
+  # Product Query
+  wrk -t<num_threads> -c<num_clients> -d30s http://<INGRESS_IP>:80/rdma/1/product?1YMWWN1N4O
   ```
 
 ---
@@ -106,6 +108,21 @@ sudo ./run.sh paymentservice 8
 sudo ./run.sh emailservice 9
 sudo ./run.sh adservice 10
 ```
+
+**Load Generator:**
+
+* Use `wrk` for load generation:
+
+  ```bash
+  # Home Query
+  wrk -t<num_threads> -c<num_clients> -d30s http://<INGRESS_IP>:80/rdma/1/
+
+  # View Cart
+  wrk -t<num_threads> -c<num_clients> -d30s http://<INGRESS_IP>:80/rdma/1/cart
+
+  # Product Query
+  wrk -t<num_threads> -c<num_clients> -d30s http://<INGRESS_IP>:80/rdma/1/product?1YMWWN1N4O
+  ```
 
 ---
 
@@ -149,3 +166,18 @@ sudo ./run.sh paymentservice 8
 sudo ./run.sh emailservice 9
 sudo ./run.sh adservice 10
 ```
+
+**Load Generator:**
+
+* Use `wrk` for load generation:
+
+  ```bash
+  # Home Query
+  wrk -t<num_threads> -c<num_clients> -d30s http://<NETENG_IP>:8080/1/
+
+  # View Cart
+  wrk -t<num_threads> -c<num_clients> -d30s http://<NETENG_IP>:8080/1/cart
+
+  # Product Query
+  wrk -t<num_threads> -c<num_clients> -d30s http://<NETENG_IP>:8080/1/product?1YMWWN1N4O
+  ```

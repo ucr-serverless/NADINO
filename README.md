@@ -12,7 +12,7 @@
 * [Installation](#installation)
   * [Ingress](#nadino-ingress)
   * [Network Engine](#network-engine)
-* [Configuration](#configuration)
+* [Workload Configuration](#workload-configuration)
 * [Sample Experiments](#sample-experiments)
 * [License](#license)
 

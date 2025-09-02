@@ -1,0 +1,6 @@
+[submodule "nadino-ingress"]
+	path = nadino-ingress
+	url = https://github.com/ucr-serverless/nadino-ingress.git
+[submodule "nadino-network-engine"]
+	path = nadino-network-engine
+	url = https://github.com/ucr-serverless/nadino-network-engine.git

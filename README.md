@@ -13,9 +13,7 @@
   * [Ingress](#nadino-ingress)
   * [Network Engine](#network-engine)
 * [Configuration](#configuration)
-* [Running Examples](#running-examples)
-* [Testing](#testing)
-* [Development Notes](#development-notes)
+* [Sample Experiments](#sample-experiments)
 * [License](#license)
 
 ---

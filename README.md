@@ -86,7 +86,7 @@
 
    * **Compile DPDK (21.11):**
         ```bash
-        cd nadino-ingress/f-stack/dpdk
+        cd ~/NADINO/nadino-ingress/f-stack/dpdk
         meson setup -Denable_kmods=true build
         ninja -C build
         ninja -C build install
@@ -126,7 +126,7 @@
    * **F-Stack:**
         ```bash
         # Compile and install F-Stack
-        export FF_PATH=~/nadino-ingress/f-stack
+        export FF_PATH=~/NADINO/nadino-ingress/f-stack
         export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig:/usr/lib/pkgconfig
         cd $FF_PATH/lib/
         make -j
@@ -136,7 +136,7 @@
 3. **Build RDMA lib**
 
    ```bash
-   cd ~/nadino-ingress/RDMA_lib && make
+   cd ~/NADINO/nadino-ingress/RDMA_lib && make
    ```
 
 4. **Build DOCA lib**
@@ -150,7 +150,7 @@
     sudo apt-get -y install doca-all
 
     # Install DOCA Lib
-    cd ~/nadino-ingress/DOCA_lib
+    cd ~/NADINO/nadino-ingress/DOCA_lib
     meson /tmp/doca_lib
     ninja -C /tmp/doca_lib
    ```
@@ -162,7 +162,7 @@
    > * Update RDMA params in `pdi_rdma.c` (device, address, port, etc.).
 
    ```bash
-    cd ~/nadino-ingress/
+    cd ~/NADINO/nadino-ingress/
     bash ./configure --prefix=/usr/local/nginx_fstack --with-ff_module
     # For debugging: ./configure --prefix=/usr/local/nginx_fstack --with-ff_module --with-debug
 
@@ -286,7 +286,7 @@
 ### Network Engine
 
    ```bash
-   cd nadino-network-engine
+   cd ~/NADINO/nadino-network-engine
    ```
 
 1. **Dependencies**
@@ -323,13 +323,14 @@
     * Ensure `RDMA_lib` is built:
         ```bash
         cd RDMA_lib
-        meson setup build --reconfigure
+        meson setup build
         ninja -C build -v
         ```
 
 2. **Build Network Engine**
 
    ```bash
+   cd ~/NADINO/nadino-network-engine
    meson setup build
    ninja -C build -v
    ```

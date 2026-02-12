@@ -1,8 +1,9 @@
 ## About
 
 **NADINO** is a research prototype for high-performance, DPU-accelerated serverless networking. NADINO consists of two main components:
-* **NADINO Ingress:** an NGINX-based ingress that offloads protocol conversion and communication to RDMA and F-Stack.
-* **NADINO Network Engine:** a DPU-enabled network engine that orchestrates RDMA flows and enables function chaining with low CPU overhead.
+* **[NADINO Ingress](https://github.com/ucr-serverless/nadino-ingress.git
+):** an NGINX-based ingress that offloads protocol conversion and communication to RDMA and F-Stack.
+* **[NADINO Network Engine](https://github.com/ucr-serverless/nadino-network-engine.git):** a DPU-enabled network engine that orchestrates RDMA flows and enables function chaining with low CPU overhead.
 
 ---
 
@@ -21,7 +22,7 @@
 ## Testbed
 
 - **Tested OS**: Existing build has been tested on Ubuntu 22.04 with kernel 5.15.
-- **Reference topology**: You will need at least four nodes in your cluster. Two nodes are used as worker nodes to deploy user functions. One node is used to deploy NADINO ingress. The remaining node is used for load generation. A sample topology is shown below:
+- **Reference topology**: You will need at least four nodes in your cluster. Two nodes are used as worker nodes to deploy user functions. One node is used to deploy NADINO ingress. The remaining node is used for load generation.  A sample topology is shown below:
 
     <img src="./docs/ref_topo.png" alt="ref_topo" style="width:50%; height:auto;">
 
@@ -29,13 +30,13 @@
     - NADINO ingress requires **two** NICs: One [DPDK-compatible NIC](https://core.dpdk.org/supported/nics/) for F-stack and one RDMA NIC.
     - The worker node requires a NVIDIA BlueField DPU to deploy NADINO DNE.
 
-> We recommend to use [`r7527`](https://docs.cloudlab.us/hardware.html) nodes on CloudLab for experimenting NADINO.
-
+> We recommend to use [`r7527`](https://docs.cloudlab.us/hardware.html) nodes on CloudLab for experimenting NADINO with our customized [network profile](https://www.cloudlab.us/p/KKProjects/dpu-same-lan).
 ---
 
 ## Installation
 
    ```bash
+   cd
    git clone --recursive https://github.com/ucr-serverless/NADINO.git
    cd NADINO
    git submodule update --init --recursive
@@ -175,15 +176,6 @@
 
     # NOTE 2: Update hardcoded RDMA params in pdi_rdma.c
     # Go to pdin_init_rdma_config() in pdi_rdma.c
-        char *argv[] = {
-            "dummy",
-            "-d", "mlx5_0",
-            "-s", "167088",
-            "-a", "128.110.219.40",
-            "-p", "10000"
-        };
-
-    # If need "-g"
         char *argv[] = {
             "dummy",
             "-d", "mlx5_0",

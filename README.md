@@ -2,9 +2,7 @@
 
 **NADINO** is a research prototype for high-performance, DPU-accelerated serverless networking. NADINO consists of two main components:
 * **[NADINO Ingress](https://github.com/ucr-serverless/nadino-ingress.git):** an NGINX-based ingress that offloads protocol conversion and communication to RDMA and F-Stack.
-* **[NADINO Network Engine](https://github.com/ucr-serverless/nadino-network-engine.git):** a DPU-enabled network engine that orchestrates RDMA flows and enables function chaining with low CPU overhead. Supports two deployment variants:
-  * **DNE (DPU Network Engine):** gateway runs on a BlueField-2 DPU.
-  * **CNE (CPU Network Engine):** gateway runs on the host CPU.
+* **[NADINO Network Engine](https://github.com/ucr-serverless/nadino-network-engine.git):** a DPU-enabled network engine that orchestrates RDMA flows and enables function chaining with low CPU overhead.
 
 ---
 
@@ -45,13 +43,6 @@ Clone NADINO and initialize submodules:
    git submodule update --init --recursive
    ```
 
-Both submodules are configured to track the `main` branch of their upstream repositories. To update them to the latest commit at any time:
-
-   ```bash
-   git submodule update --remote
-   git add nadino-ingress nadino-network-engine
-   git commit -m "Update submodules to latest main"
-   ```
 
 ### NADINO Ingress
 
@@ -104,7 +95,7 @@ Key steps:
     bash sigcomm-experiment/env-setup/002-env_setup_master.sh
     ```
 
-3. Build RDMA lib, DOCA lib (DNE only), and Network Engine:
+3. Build RDMA lib, DOCA lib, and Network Engine:
 
     ```bash
     cd RDMA_lib && meson setup build --reconfigure && ninja -C build/ -v && cd ..
@@ -117,16 +108,15 @@ All components are launched via `run.sh` (run as root, in order):
 | Component | Command | Notes |
 |-----------|---------|-------|
 | Shared memory manager | `sudo ./run.sh shm_mgr <cfg>` | Start first on each node |
-| DPU gateway | `sudo ./run.sh gateway <cfg>` | DNE: runs on BlueField DPU |
-| CPU gateway | `sudo ./run.sh cpu_gateway <cfg>` | CNE: runs on host CPU |
+| Sockmap manager | `sudo ./run.sh sockmap_manager` | |
 | Network function | `sudo ./run.sh <service_name> <nf_id>` | One process per function |
-| Sockmap manager | `sudo ./run.sh sockmap_manager` | DNE only |
+| DPU gateway | `sudo ./run.sh gateway <cfg>` | DNE: runs on BlueField DPU |
 
 ---
 
 ## Running Online Boutique
 
-This section shows how to deploy the full **Online Boutique** microservices workload using the DNE variant across the four-node topology shown in the [Testbed](#testbed) diagram above.
+This section shows how to deploy the **Online Boutique** microservices workload using the DNE across the four-node topology shown in the [Testbed](#testbed) diagram above.
 
 > **Config file:** `nadino-network-engine/cfg/ae_online-boutique-palladium-dpu.cfg`
 >
@@ -145,6 +135,7 @@ Start components in this order — each component must be fully up before procee
 7. Gateway — **DPU 1** (attached to Worker 1)
 8. Gateway — **DPU 2** (attached to Worker 2)
 9. NADINO Ingress — **Ingress node**
+10. Generate load using wrk - **Load gen node**
 
 ---
 
@@ -156,10 +147,10 @@ cd ~/NADINO/nadino-network-engine
 # Step 1 — shared memory manager
 sudo ./run.sh shm_mgr ./cfg/ae_online-boutique-palladium-dpu.cfg
 
-# Step 2 — sockmap manager (DNE only)
+# Step 2 — sockmap manager
 sudo ./run.sh sockmap_manager
 
-# Step 3 — network functions
+# Step 4 — network functions
 sudo ./run.sh frontendservice       1
 sudo ./run.sh recommendationservice 5
 sudo ./run.sh checkoutservice       7
@@ -170,7 +161,7 @@ sudo ./run.sh checkoutservice       7
 ```bash
 cd ~/NADINO/nadino-network-engine
 
-# Step 7 — DPU gateway
+# Step 3 — DPU gateway
 sudo ./run.sh gateway ./cfg/ae_online-boutique-palladium-dpu.cfg
 ```
 
@@ -179,13 +170,13 @@ sudo ./run.sh gateway ./cfg/ae_online-boutique-palladium-dpu.cfg
 ```bash
 cd ~/NADINO/nadino-network-engine
 
-# Step 4 — shared memory manager
+# Step 5 — shared memory manager
 sudo ./run.sh shm_mgr ./cfg/ae_online-boutique-palladium-dpu.cfg
 
-# Step 5 — sockmap manager (DNE only)
+# Step 6 — sockmap manager
 sudo ./run.sh sockmap_manager
 
-# Step 6 — network functions
+# Step 8 — network functions
 sudo ./run.sh currencyservice       2
 sudo ./run.sh productcatalogservice 3
 sudo ./run.sh cartservice           4
@@ -200,7 +191,7 @@ sudo ./run.sh adservice            10
 ```bash
 cd ~/NADINO/nadino-network-engine
 
-# Step 8 — DPU gateway
+# Step 7 — DPU
 sudo ./run.sh gateway ./cfg/ae_online-boutique-palladium-dpu.cfg
 ```
 
@@ -225,6 +216,8 @@ wrk -t1 -c50 -d30s http://<INGRESS_IP>:80/rdma/1/cart
 # Product query
 wrk -t1 -c50 -d30s "http://<INGRESS_IP>:80/rdma/1/product?1YMWWN1N4O"
 ```
+
+For the `./cfg/ae_online-boutique-palladium-dpu.cfg`, the `<INGRESS_IP>` is `10.10.1.3`.
 
 ---
 

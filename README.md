@@ -14,7 +14,7 @@
 * [Installation](#installation)
   * [Ingress](#nadino-ingress)
   * [Network Engine](#network-engine)
-* [Workload Configuration](#workload-configuration)
+* [Running Online Boutique](#running-online-boutique)
 * [Sample Experiments](#sample-experiments)
 * [License](#license)
 
@@ -78,12 +78,6 @@ Key steps:
 
 5. Configure `conf/f-stack.conf` (DPDK port and hugepage settings), `conf/nginx.conf` (worker count, location blocks), and `conf/rdma.cfg` (RDMA device, backend IP/port, GID index — read at runtime, no recompile needed). Run `sudo make install` after editing config files.
 
-6. Run NADINO Ingress:
-
-    ```bash
-    sudo /usr/local/nginx_fstack/sbin/nginx -g "daemon off;"
-    ```
-
 ---
 
 ### Network Engine
@@ -122,23 +116,106 @@ All components are launched via `run.sh` (run as root, in order):
 
 ---
 
-## Workload Configuration
+## Running Online Boutique
 
-* Update config files in `nadino-network-engine/cfg/` directory (see [CONFIG.md](docs/CONFIG.md)).
+This section shows how to deploy the full **Online Boutique** microservices workload using the DNE variant across the four-node topology shown in the [Testbed](#testbed) diagram above.
 
-> The configuration file defines the mapping of functions, routes, nodes, tenants, memory, and RDMA settings needed to deploy and run NADINO experiments. It defines:
+> **Config file:** `nadino-network-engine/cfg/ae_online-boutique-palladium-dpu.cfg`
 >
-> * **Functions:** their identities, names, placement, threading, and workload parameters.
-> * **Call graphs:** the execution paths requests follow across functions.
-> * **Nodes:** the worker nodes and DPUs, along with IPs, hostnames, RDMA devices, and DOCA communication channel settings.
-> * **Tenants:** isolation and fairness settings via tenant IDs, weights, and permitted routes.
-> * **Memory manager settings:** memory pool sizes, placement, and associated device bindings.
-> * **RDMA settings:** whether to use RDMA or TCP, choice of one-sided vs. two-sided RDMA, queue sizing, and experiment knobs.
+> Use `tmux` or `byobu` to manage multiple panes. All `run.sh` commands must be run as root from the `nadino-network-engine/` directory.
 
-To auto-detect RDMA parameters on a CloudLab node:
+### Startup Order
+
+Start components in this order — components must be fully up before proceeding to the next step:
+
+1. Shared memory manager — **Worker 1**
+2. Sockmap manager — **Worker 1**
+3. Shared memory manager — **Worker 2**
+4. Sockmap manager — **Worker 2**
+5. Gateway — **DPU 1** (attached to Worker 1)
+6. Gateway — **DPU 2** (attached to Worker 2)
+7. NADINO Ingress — **Ingress node**
+8. Network functions — **Worker 1**
+9. Network functions — **Worker 2**
+
+---
+
+### Worker 1 (host)
 
 ```bash
-python RDMA_lib/scripts/get_cloudlab_node_settings.py
+cd ~/NADINO/nadino-network-engine
+
+# Step 1 — shared memory manager
+sudo ./run.sh shm_mgr ./cfg/ae_online-boutique-palladium-dpu.cfg
+
+# Step 2 — sockmap manager (DNE only)
+sudo ./run.sh sockmap_manager
+
+# Step 8 — network functions
+sudo ./run.sh frontendservice      1
+sudo ./run.sh recommendationservice 5
+sudo ./run.sh checkoutservice      7
+```
+
+### DPU 1 (attached to Worker 1)
+
+```bash
+cd ~/NADINO/nadino-network-engine
+
+# Step 5 — DPU gateway
+sudo ./run.sh gateway ./cfg/ae_online-boutique-palladium-dpu.cfg
+```
+
+### Worker 2 (host)
+
+```bash
+cd ~/NADINO/nadino-network-engine
+
+# Step 3 — shared memory manager
+sudo ./run.sh shm_mgr ./cfg/ae_online-boutique-palladium-dpu.cfg
+
+# Step 4 — sockmap manager (DNE only)
+sudo ./run.sh sockmap_manager
+
+# Step 9 — network functions
+sudo ./run.sh currencyservice       2
+sudo ./run.sh productcatalogservice 3
+sudo ./run.sh cartservice           4
+sudo ./run.sh shippingservice       6
+sudo ./run.sh paymentservice        8
+sudo ./run.sh emailservice          9
+sudo ./run.sh adservice            10
+```
+
+### DPU 2 (attached to Worker 2)
+
+```bash
+cd ~/NADINO/nadino-network-engine
+
+# Step 6 — DPU gateway
+sudo ./run.sh gateway ./cfg/ae_online-boutique-palladium-dpu.cfg
+```
+
+### Ingress node
+
+```bash
+# Step 7 — start NADINO Ingress
+sudo /usr/local/nginx_fstack/sbin/nginx -g "daemon off;"
+```
+
+### Load Generator node
+
+Send load to the ingress node (replace `<INGRESS_IP>` with the ingress node's IP):
+
+```bash
+# Home page
+wrk -t<num_threads> -c<num_clients> -d30s http://<INGRESS_IP>:80/rdma/1/
+
+# View cart
+wrk -t<num_threads> -c<num_clients> -d30s http://<INGRESS_IP>:80/rdma/1/cart
+
+# Product query
+wrk -t<num_threads> -c<num_clients> -d30s "http://<INGRESS_IP>:80/rdma/1/product?1YMWWN1N4O"
 ```
 
 ---
@@ -147,9 +224,6 @@ python RDMA_lib/scripts/get_cloudlab_node_settings.py
 
 ### Running with a Dummy Function Chain
 See [Dummy Function Chain Setup](docs/DUMMY.md) for details.
-
-### Running with Online Boutique Workload
-See [Online Boutique Workload](docs/ONLINE_BOUTIQUE.md) for details.
 
 ---
 

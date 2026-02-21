@@ -45,6 +45,14 @@ Clone NADINO and initialize submodules:
    git submodule update --init --recursive
    ```
 
+Both submodules are configured to track the `main` branch of their upstream repositories. To update them to the latest commit at any time:
+
+   ```bash
+   git submodule update --remote
+   git add nadino-ingress nadino-network-engine
+   git commit -m "Update submodules to latest main"
+   ```
+
 ### NADINO Ingress
 
 > Full installation guide: [nadino-ingress/README.md](./nadino-ingress/README.md)
@@ -126,17 +134,17 @@ This section shows how to deploy the full **Online Boutique** microservices work
 
 ### Startup Order
 
-Start components in this order — components must be fully up before proceeding to the next step:
+Start components in this order — each component must be fully up before proceeding to the next step:
 
 1. Shared memory manager — **Worker 1**
 2. Sockmap manager — **Worker 1**
-3. Shared memory manager — **Worker 2**
-4. Sockmap manager — **Worker 2**
-5. Gateway — **DPU 1** (attached to Worker 1)
-6. Gateway — **DPU 2** (attached to Worker 2)
-7. NADINO Ingress — **Ingress node**
-8. Network functions — **Worker 1**
-9. Network functions — **Worker 2**
+3. Network functions — **Worker 1**
+4. Shared memory manager — **Worker 2**
+5. Sockmap manager — **Worker 2**
+6. Network functions — **Worker 2**
+7. Gateway — **DPU 1** (attached to Worker 1)
+8. Gateway — **DPU 2** (attached to Worker 2)
+9. NADINO Ingress — **Ingress node**
 
 ---
 
@@ -151,10 +159,10 @@ sudo ./run.sh shm_mgr ./cfg/ae_online-boutique-palladium-dpu.cfg
 # Step 2 — sockmap manager (DNE only)
 sudo ./run.sh sockmap_manager
 
-# Step 8 — network functions
-sudo ./run.sh frontendservice      1
+# Step 3 — network functions
+sudo ./run.sh frontendservice       1
 sudo ./run.sh recommendationservice 5
-sudo ./run.sh checkoutservice      7
+sudo ./run.sh checkoutservice       7
 ```
 
 ### DPU 1 (attached to Worker 1)
@@ -162,7 +170,7 @@ sudo ./run.sh checkoutservice      7
 ```bash
 cd ~/NADINO/nadino-network-engine
 
-# Step 5 — DPU gateway
+# Step 7 — DPU gateway
 sudo ./run.sh gateway ./cfg/ae_online-boutique-palladium-dpu.cfg
 ```
 
@@ -171,13 +179,13 @@ sudo ./run.sh gateway ./cfg/ae_online-boutique-palladium-dpu.cfg
 ```bash
 cd ~/NADINO/nadino-network-engine
 
-# Step 3 — shared memory manager
+# Step 4 — shared memory manager
 sudo ./run.sh shm_mgr ./cfg/ae_online-boutique-palladium-dpu.cfg
 
-# Step 4 — sockmap manager (DNE only)
+# Step 5 — sockmap manager (DNE only)
 sudo ./run.sh sockmap_manager
 
-# Step 9 — network functions
+# Step 6 — network functions
 sudo ./run.sh currencyservice       2
 sudo ./run.sh productcatalogservice 3
 sudo ./run.sh cartservice           4
@@ -192,14 +200,14 @@ sudo ./run.sh adservice            10
 ```bash
 cd ~/NADINO/nadino-network-engine
 
-# Step 6 — DPU gateway
+# Step 8 — DPU gateway
 sudo ./run.sh gateway ./cfg/ae_online-boutique-palladium-dpu.cfg
 ```
 
 ### Ingress node
 
 ```bash
-# Step 7 — start NADINO Ingress
+# Step 9 — start NADINO Ingress
 sudo /usr/local/nginx_fstack/sbin/nginx -g "daemon off;"
 ```
 
@@ -209,13 +217,13 @@ Send load to the ingress node (replace `<INGRESS_IP>` with the ingress node's IP
 
 ```bash
 # Home page
-wrk -t<num_threads> -c<num_clients> -d30s http://<INGRESS_IP>:80/rdma/1/
+wrk -t1 -c50 -d30s http://<INGRESS_IP>:80/rdma/1/
 
 # View cart
-wrk -t<num_threads> -c<num_clients> -d30s http://<INGRESS_IP>:80/rdma/1/cart
+wrk -t1 -c50 -d30s http://<INGRESS_IP>:80/rdma/1/cart
 
 # Product query
-wrk -t<num_threads> -c<num_clients> -d30s "http://<INGRESS_IP>:80/rdma/1/product?1YMWWN1N4O"
+wrk -t1 -c50 -d30s "http://<INGRESS_IP>:80/rdma/1/product?1YMWWN1N4O"
 ```
 
 ---

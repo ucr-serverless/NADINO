@@ -8,6 +8,8 @@ client → function-1 → function-2 → client
 
 The deployment uses **two worker nodes**, each running a memory manager, gateway, and one function instance.
 
+For full details see the [nadino-network-engine Quick Test](../nadino-network-engine/README.md#quick-test--two-node-dummy-function-chain).
+
 ---
 
 ### Worker Node 1
@@ -16,10 +18,10 @@ The deployment uses **two worker nodes**, each running a memory manager, gateway
 cd nadino-network-engine
 
 # Start the shared memory manager
-sudo ./run.sh shm_mgr ./cfg/my-palladium-cpu.cfg
+sudo ./run.sh shm_mgr ./cfg/ae_simple_dpu.cfg
 
-# Launch the gateway
-sudo ./run.sh gateway ./cfg/my-palladium-cpu.cfg
+# Launch the CPU gateway
+sudo ./run.sh cpu_gateway ./cfg/ae_simple_dpu.cfg
 
 # Start the first function in the chain
 sudo ./run.sh nf 1
@@ -33,10 +35,10 @@ sudo ./run.sh nf 1
 cd nadino-network-engine
 
 # Start the shared memory manager
-sudo ./run.sh shm_mgr ./cfg/my-palladium-cpu.cfg
+sudo ./run.sh shm_mgr ./cfg/ae_simple_dpu.cfg
 
-# Launch the gateway
-sudo ./run.sh gateway ./cfg/my-palladium-cpu.cfg
+# Launch the CPU gateway
+sudo ./run.sh cpu_gateway ./cfg/ae_simple_dpu.cfg
 
 # Start the second function in the chain
 sudo ./run.sh nf 2
@@ -44,8 +46,14 @@ sudo ./run.sh nf 2
 
 ---
 
-✨ **Notes:**
+Test with curl (gateway listens on port 8080):
 
-* Replace `./cfg/my-palladium-cpu.cfg` with your own configuration file if needed.
+```bash
+curl http://10.10.1.1:8080/
+```
+
+**Notes:**
+
+* Replace `./cfg/ae_simple_dpu.cfg` with your own configuration file if needed.
 * The `nf` argument specifies the function ID (`1` for the first function, `2` for the second).
 * Ensure both worker nodes can reach each other over the configured RDMA network.

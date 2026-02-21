@@ -46,7 +46,7 @@ Clone NADINO and initialize submodules:
 
 ### NADINO Ingress
 
-> Full installation guide: [nadino-ingress/README.md](./nadino-ingress/README.md)
+> Full installation guide: nadino-ingress/README.md
 
 Key steps:
 
@@ -81,11 +81,11 @@ Key steps:
 
 ### Network Engine
 
-> Full installation guide: [nadino-network-engine/README.md](./nadino-network-engine/README.md)
+> Full installation guide: nadino-network-engine/README.md
 
 Key steps:
 
-1. Install DOCA 2.10.0 on each host node. For DPU setup, see the [BlueField2 DPU Setup Guide](./nadino-network-engine/docs/BlueField2-DPU-Setup-Guide.md).
+1. Install DOCA 2.10.0 on each host node. For DPU setup, see the BlueField2 DPU Setup Guide at `./nadino-network-engine/docs/BlueField2-DPU-Setup-Guide.md`.
 
 2. Run environment setup scripts to install libbpf, DPDK RTE libraries, and configure hugepages:
 

@@ -64,12 +64,29 @@ Key steps:
     # Build DOCA lib
     cd DOCA_lib && meson /tmp/doca_lib && ninja -C /tmp/doca_lib && cd ..
 
+    # Build DPDK
+
+
+    cd ./f-stack/dpdk/
+    meson setup -Denable_kmods=true build
+    ninja -C build
+    sudo ninja -C build install
+
+    # Build f-stack
+
+    export FF_PATH=~/NADINO/nadino-ingress/f-stack
+    export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig:/usr/lib/pkgconfig
+    cd ~/nadino-ingress/f-stack/lib/
+    make -j
+    sudo make install
+
     # Build and install NADINO Ingress
-    FF_PATH=~/nadino-ingress/f-stack \
+    cd ~/NADINO/nadino-ingress/
+    FF_PATH=~/NADINO/nadino-ingress/f-stack \
     PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig:/usr/lib/pkgconfig \
         ./configure --prefix=/usr/local/nginx_fstack --with-ff_module
-    python ./scripts/patch_make.py   # patches objs/Makefile for pdi_rdma
-    FF_PATH=~/nadino-ingress/f-stack \
+    python ./scripts/patch_make.py
+    FF_PATH=~/NADINO/nadino-ingress/f-stack \
     PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig:/usr/lib/pkgconfig \
         make -j
     sudo make install
@@ -85,7 +102,7 @@ Key steps:
 
 Key steps:
 
-1. Install DOCA 2.10.0 on each host node. For DPU setup, see the BlueField2 DPU Setup Guide at `./nadino-network-engine/docs/BlueField2-DPU-Setup-Guide.md`.
+1. Install Drivers on host and DPU. Specifically, DOCA 2.10.0 on each host node. For DPU setup, see the BlueField2 DPU Setup Guide at `./nadino-network-engine/docs/BlueField2-DPU-Setup-Guide.md`.
 
 2. Run environment setup scripts to install libbpf, DPDK RTE libraries, and configure hugepages:
 
@@ -98,9 +115,8 @@ Key steps:
 3. Build RDMA lib, DOCA lib, and Network Engine:
 
     ```bash
-    cd RDMA_lib && meson setup build --reconfigure && ninja -C build/ -v && cd ..
-    cd DOCA_lib && meson /tmp/doca_lib && ninja -C /tmp/doca_lib && cd ..  # DNE only
-    meson setup build && ninja -C build/ -v
+    meson setup build
+    ninja -C build/ -v
     ```
 
 All components are launched via `run.sh` (run as root, in order):
@@ -109,8 +125,8 @@ All components are launched via `run.sh` (run as root, in order):
 |-----------|---------|-------|
 | Shared memory manager | `sudo ./run.sh shm_mgr <cfg>` | Start first on each node |
 | Sockmap manager | `sudo ./run.sh sockmap_manager` | |
-| Network function | `sudo ./run.sh <service_name> <nf_id>` | One process per function |
 | DPU gateway | `sudo ./run.sh gateway <cfg>` | DNE: runs on BlueField DPU |
+| Network function | `sudo ./run.sh <service_name> <nf_id>` | One process per function |
 
 ---
 
@@ -134,10 +150,27 @@ Start components in this order — each component must be fully up before procee
 6. Network functions — **Worker 2**
 7. Gateway — **DPU 1** (attached to Worker 1)
 8. Gateway — **DPU 2** (attached to Worker 2)
-9. NADINO Ingress — **Ingress node**
+9. NADINO Ingress — **Ingress node** (see [nadino-ingress](https://github.com/ucr-serverless/nadino-ingress))
 10. Generate load using wrk - **Load gen node**
 
 ---
+
+Two tmux setup scripts are provided to pre-fill all commands across 16 panes. Run from the
+project root on each host:
+
+```bash
+# On worker1 host
+cd ~/NADINO/nadino-network-engine/
+./scripts/tmux_dne_host1.sh
+```
+
+```bash
+# On worker2 host
+cd ~/NADINO/nadino-network-engine/
+./scripts/tmux_dne_host2.sh
+```
+
+These commands will open a tmux windows with commands prefilled on the *Host* side. You can execute them in order. *Remember you still need to open a window to DPU and execute gateway there*
 
 ### Worker 1 (host)
 

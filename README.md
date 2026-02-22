@@ -207,17 +207,19 @@ sudo /usr/local/nginx_fstack/sbin/nginx -g "daemon off;"
 Send load to the ingress node (replace `<INGRESS_IP>` with the ingress node's IP):
 
 ```bash
-# Home page
-wrk -t1 -c50 -d30s http://<INGRESS_IP>:80/rdma/1/
+# Cart endpoint
+wrk -t1 -c50 -d10s http://10.10.1.3:80/rdma/1/cart -H "Connection: Close"
 
-# View cart
-wrk -t1 -c50 -d30s http://<INGRESS_IP>:80/rdma/1/cart
+# Default (homepage) endpoint
+wrk -t1 -c50 -d10s http://10.10.1.3:80/rdma/1/ -H "Connection: Close"
 
-# Product query
-wrk -t1 -c50 -d30s "http://<INGRESS_IP>:80/rdma/1/product?1YMWWN1N4O"
+# Product endpoint
+wrk -t1 -c50 -d10s "http://10.10.1.3:80/rdma/1/product?1YMWWN1N4O" -H "Connection: Close"
 ```
 
-For the `./cfg/ae_online-boutique-palladium-dpu.cfg`, the `<INGRESS_IP>` is `10.10.1.3`.
+*NOTE*: For the `./cfg/ae_online-boutique-palladium-dpu.cfg`, the `<INGRESS_IP>` is `10.10.1.3`. If your ingress use different IP, you should change it accordingly.
+
+*NOTE*: run different commands one by one and be patient and wait wrk print the request rate result.
 
 ---
 

@@ -91,6 +91,7 @@ Key steps:
         make -j
     sudo make install
     ```
+*NOTE: if you encounter compilation errors when compiling DOCA_lib, it may because there are older build artifacts under the `/tmp/doca_lib`, you can use `sudo rm -rf /tmp/doca_lib` to remove it and retry again.*
 
 5. Configure `conf/f-stack.conf` (DPDK port and hugepage settings), `conf/nginx.conf` (worker count, location blocks), and `conf/rdma.cfg` (RDMA device, backend IP/port, GID index — read at runtime, no recompile needed). Run `sudo make install` after editing config files.
 

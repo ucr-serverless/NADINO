@@ -115,6 +115,7 @@ Key steps:
 3. Build RDMA lib, DOCA lib, and Network Engine:
 
     ```bash
+    cd ~/NADINO/nadino-network-engine
     meson setup build
     ninja -C build/ -v
     ```

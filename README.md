@@ -65,20 +65,20 @@ Key steps:
     cd DOCA_lib && meson /tmp/doca_lib && ninja -C /tmp/doca_lib && cd ..
 
     # Build DPDK
-
-
     cd ./f-stack/dpdk/
     meson setup -Denable_kmods=true build
     ninja -C build
     sudo ninja -C build install
+    cd ~/NADINO/nadino-ingress/
 
     # Build f-stack
 
     export FF_PATH=~/NADINO/nadino-ingress/f-stack
     export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig:/usr/lib/pkgconfig
-    cd ~/nadino-ingress/f-stack/lib/
+    cd ~/NADINO/nadino-ingress/f-stack/lib/
     make -j
     sudo make install
+    cd ~/NADINO/nadino-ingress/
 
     # Build and install NADINO Ingress
     cd ~/NADINO/nadino-ingress/
